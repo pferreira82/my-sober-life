@@ -1,0 +1,12 @@
+specVersion: "v1beta"
+serviceId: "Be The Change"
+location: "us-central1"
+schema:
+  source: "./schema"
+  datasource:
+    postgresql:
+      database: "fdcdb"
+      cloudSql:
+        instanceId: "Be The Change-fdc"
+      # schemaValidation: "COMPATIBLE"
+connectorDirs: ["./connector"]

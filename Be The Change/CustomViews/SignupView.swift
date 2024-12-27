@@ -19,129 +19,135 @@
 
 import SwiftUI
 import Combine
-import FirebaseAnalyticsSwift
 
 private enum FocusableField: Hashable {
-  case email
-  case password
-  case confirmPassword
+    case email
+    case password
+    case confirmPassword
 }
 
 struct SignupView: View {
-  @EnvironmentObject var viewModel: AuthenticationViewModel
-  @Environment(\.dismiss) var dismiss
-
-  @FocusState private var focus: FocusableField?
-
-  private func signUpWithEmailPassword() {
-    Task {
-      if await viewModel.signUpWithEmailPassword() == true {
-        dismiss()
-      }
+    @EnvironmentObject var viewModel: AuthViewModel
+    @Environment(\.dismiss) var dismiss
+    
+    @FocusState private var focus: FocusableField?
+    
+    private func signUpWithEmailPassword() {
+        Task {
+            if await viewModel.signUpWithEmailPassword() == true {
+                dismiss() // Dismiss the view after successful sign-up
+            }
+        }
     }
-  }
-
-  var body: some View {
-    VStack {
-      Image("SignUp")
-        .resizable()
-        .aspectRatio(contentMode: .fit)
-        .frame(minHeight: 300, maxHeight: 400)
-      Text("Sign up")
-        .font(.largeTitle)
-        .fontWeight(.bold)
-        .frame(maxWidth: .infinity, alignment: .leading)
-
-      HStack {
-        Image(systemName: "at")
-        TextField("Email", text: $viewModel.email)
-          .textInputAutocapitalization(.never)
-          .disableAutocorrection(true)
-          .focused($focus, equals: .email)
-          .submitLabel(.next)
-          .onSubmit {
-            self.focus = .password
-          }
-      }
-      .padding(.vertical, 6)
-      .background(Divider(), alignment: .bottom)
-      .padding(.bottom, 4)
-
-      HStack {
-        Image(systemName: "lock")
-        SecureField("Password", text: $viewModel.password)
-          .focused($focus, equals: .password)
-          .submitLabel(.next)
-          .onSubmit {
-            self.focus = .confirmPassword
-          }
-      }
-      .padding(.vertical, 6)
-      .background(Divider(), alignment: .bottom)
-      .padding(.bottom, 8)
-
-      HStack {
-        Image(systemName: "lock")
-        SecureField("Confirm password", text: $viewModel.confirmPassword)
-          .focused($focus, equals: .confirmPassword)
-          .submitLabel(.go)
-          .onSubmit {
-            signUpWithEmailPassword()
-          }
-      }
-      .padding(.vertical, 6)
-      .background(Divider(), alignment: .bottom)
-      .padding(.bottom, 8)
-
-
-      if !viewModel.errorMessage.isEmpty {
-        VStack {
-          Text(viewModel.errorMessage)
-            .foregroundColor(Color(UIColor.systemRed))
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            // App Logo or Header
+            VStack(spacing: 10) {
+                Text("Create an Account")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(.blue)
+                
+                Text("Welcome to Be The Change!")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+            }
+            .padding(.top, 50)
+            
+            // Sign Up Form
+            VStack(spacing: 15) {
+                HStack {
+                    Image(systemName: "envelope")
+                        .foregroundColor(.gray)
+                    TextField("Email", text: $viewModel.email)
+                        .textInputAutocapitalization(.never)
+                        .disableAutocorrection(true)
+                        .focused($focus, equals: .email)
+                        .submitLabel(.next)
+                        .onSubmit {
+                            focus = .password
+                        }
+                }
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(10)
+                
+                HStack {
+                    Image(systemName: "lock")
+                        .foregroundColor(.gray)
+                    SecureField("Password", text: $viewModel.password)
+                        .focused($focus, equals: .password)
+                        .submitLabel(.next)
+                        .onSubmit {
+                            focus = .confirmPassword
+                        }
+                }
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(10)
+                
+                HStack {
+                    Image(systemName: "lock.shield")
+                        .foregroundColor(.gray)
+                    SecureField("Confirm Password", text: $viewModel.confirmPassword)
+                        .focused($focus, equals: .confirmPassword)
+                        .submitLabel(.done)
+                        .onSubmit {
+                            signUpWithEmailPassword()
+                        }
+                }
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(10)
+            }
+            .padding(.horizontal)
+            
+            // Display Error Message (if any)
+            if !viewModel.errorMessage.isEmpty {
+                Text(viewModel.errorMessage)
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
+            
+            // Sign Up Button
+            Button(action: signUpWithEmailPassword) {
+                Text("Sign Up")
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(viewModel.isValid ? Color.blue : Color.gray)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+            }
+            .disabled(!viewModel.isValid)
+            .padding(.horizontal)
+            
+            Spacer()
+            
+            // Toggle to Login
+            HStack {
+                Text("Already have an account?")
+                Button(action: {
+                    viewModel.switchFlow() // Switch to Login Flow
+                }) {
+                    Text("Log In")
+                        .fontWeight(.semibold)
+                        .foregroundColor(.blue)
+                }
+            }
+            .padding(.bottom, 30)
         }
-      }
-
-      Button(action: signUpWithEmailPassword) {
-        if viewModel.authenticationState != .authenticating {
-          Text("Sign up")
-            .padding(.vertical, 8)
-            .frame(maxWidth: .infinity)
+        .onAppear {
+            focus = .email // Focus on the email field when the view appears
         }
-        else {
-          ProgressView()
-            .progressViewStyle(CircularProgressViewStyle(tint: .white))
-            .padding(.vertical, 8)
-            .frame(maxWidth: .infinity)
-        }
-      }
-      .disabled(!viewModel.isValid)
-      .frame(maxWidth: .infinity)
-      .buttonStyle(.borderedProminent)
-
-      HStack {
-        Text("Already have an account?")
-        Button(action: { viewModel.switchFlow() }) {
-          Text("Log in")
-            .fontWeight(.semibold)
-            .foregroundColor(.blue)
-        }
-      }
-      .padding([.top, .bottom], 50)
-
     }
-    .listStyle(.plain)
-    .padding()
-    .analyticsScreen(name: "\(Self.self)")
-  }
 }
 
-struct SignupView_Previews: PreviewProvider {
-  static var previews: some View {
-    Group {
-      SignupView()
-      SignupView()
-        .preferredColorScheme(.dark)
+struct SignUpView_Previews: PreviewProvider {
+    static var previews: some View {
+        SignupView()
+            .environmentObject(AuthViewModel())
     }
-    .environmentObject(AuthenticationViewModel())
-  }
 }
+

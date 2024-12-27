@@ -5,4 +5,9 @@
 //  Created by Peter Ferreira on 11/12/24.
 //
 
-import Foundation
+import SwiftUI
+
+@Observable
+class AppController: ObservableObject {
+    
+}

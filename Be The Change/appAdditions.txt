@@ -1,0 +1,11 @@
+- Add cravings through phone and watch
+if on watch message user what might be effecting them
+if on phone propt user what might be effecting them
+
+-Add badges to accomplishments
+
+Swipe left or right to add or cancel content
+
+Add journal entries with text and have ai questions based on past entries. 
+
+
